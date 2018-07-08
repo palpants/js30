@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+      <li>Filter for a city</li>
+      <li>or a state</li>
+    </ul>
+  </form>
+<script>
+
+  const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+/*
+  let cities = [];
+  const httpRequest = new XMLHttpRequest();
+  httpRequest.onreadystatechange = handleAjax;
+  httpRequest.open('GET', endpoint, true);
+  httpRequest.send();
+
+  function handleAjax(response) {
+    if (httpRequest.readyState === XMLHttpRequest.DONE) {
+      if (httpRequest.status === 200) {
+        cities = JSON.parse(httpRequest.responseText);
+      } else {
+        // There was a problem with the request.
+      }
+    } else {
+      // Not ready yet.
+    }
+  }
+*/
+  const cities = [];
+
+  fetch(endpoint)
+    .then(blob => blob.json())
+    .then(data => cities.push(...data));
+
+  const input = document.querySelector('.search');
+  input.addEventListener('input', handleChange);
+  const suggestions = document.querySelector('.suggestions');
+
+  function handleChange(e) {
+    const fCities = filterCities();
+    let output = '';
+    const rx = new RegExp(input.value, 'gi');
+
+    fCities.forEach(city => {
+      // capitalization is fixed in css
+      const cityHl = city.city.replace(rx, `<span class="hl">${input.value}</span>`);
+      const stateHl = city.state.replace(rx, `<span class="hl">${input.value}</span>`);
+      const population = Number(city.population).toLocaleString();
+      output += `
+        <li>
+          <span class="name">${cityHl}, ${stateHl}</span>
+          <span class="population">${population}</span>
+        </li>
+        `;
+    });
+
+    suggestions.innerHTML = output;
+  }
+
+  function filterCities() {
+    inputValue = input.value.toLowerCase();
+    const fCities = cities.filter(city => {
+      return city.city.toLowerCase().includes(inputValue) || city.state.toLowerCase().includes(inputValue);
+    });
+    return fCities;
+  }
+
+</script>
+</body>
+</html>
